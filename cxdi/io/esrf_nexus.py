@@ -177,7 +177,8 @@ class ESRFScan:
 class ESRFNexus:
     def __init__(self,fname):
         self.fname = fname
-        self.h5_handle = silx_File(fname,"r")
+        # use str(fname) below because it might be a read_files.Dataclass
+        self.h5_handle = silx_File(str(fname),"r")
         # scans include subscans 1.1, 1.2, 1.3, 2.1, ...
         self.scans = list(self.h5_handle.keys())
         scans_no = [int(s.split(".")[0]) for s in self.scans]
