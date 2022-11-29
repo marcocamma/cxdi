@@ -69,6 +69,8 @@ class H5Dataset:
 
         if self.size < 10_000:
             self._data = dataset[()]
+            if type(self._data) == bytes:
+                self._data = self._data.decode("utf8")
         else:
             self._data = None
 
