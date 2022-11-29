@@ -36,17 +36,17 @@ def group_repr(h5group):
                 obj.dtype,
             )
         elif isinstance(obj, H5Group):
-            value_str = str(obj)[:50]
+            value_str = str(obj)
         elif isinstance(obj, str):
-            value_str = obj[:50].replace("\r\n", "\n").replace("\n", " ")
+            value_str = obj.replace("\r\n", "\n").replace("\n", " ")
         elif isinstance(obj, (float, int)):
             value_str = "%g" % obj
         elif h5group[k] is None:
             value_str = "None"
         else:
             value_str = str(h5group[k]).replace("\r\n", "\n").replace("\n", " ")
-        if len(str(obj)) > 50:
-            value_str += " ..."
+        if len(value_str) > 50:
+            value_str = value_str[:50] + " ..."
         s.append(fmt % (k, value_str))
     return "\n".join(s)
 
@@ -69,8 +69,10 @@ class H5Dataset:
 
         if self.size < 10_000:
             self._data = dataset[()]
-            if type(self._data) == bytes:
+            if isinstance(self._data,bytes):
                 self._data = self._data.decode("utf8")
+            elif self._data.shape == ():
+                self._data = self._data.item()
         else:
             self._data = None
 
@@ -87,14 +89,21 @@ class H5Dataset:
     def __str__(self):
         if isinstance(self._data,str):
             s = self._data
+        elif isinstance(self._data,(float,int)):
+            s = str(self._data)
         else:
             s = f"shape={self.shape}, type={self.dtype}"
             if self._data is not None:
                 s += " " + str(self._data)
-        return s[:50]
+        ret = s[:50]
+        if len(ret) > 50:
+            ret += "..."
+        return ret
 
     def __repr__(self):
-        if self.size < 10:
+        if self.size == 1:
+            return self.__str__()
+        elif self.size < 10:
             s = "array: " + ",".join(map(str,[v for v in self]))
             return s
         else:
